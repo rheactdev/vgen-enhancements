@@ -21,4 +21,4 @@ VGen omits pricing data from the initial search results to save bandwidth. This 
 * [🍴 Install on GreasyFork](https://greasyfork.org/en/scripts/570220-vgen-hover-price-revealer-permanent-display)
 
 ## 🛠️ To Do
-- [ ] Make VGen: Open Products in Background Tab work on products not on the shop page (i.e: from the home page, shop tab on user profile, etc.)
+- [x] ~~Make VGen: Open Products in Background Tab work on products not on the shop page (i.e: from the home page, shop tab on user profile, etc.)~~ Done!
