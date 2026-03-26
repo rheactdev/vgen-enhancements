@@ -17,8 +17,8 @@
     'use strict';
 
     // --- 0. CONFIGURATION & STATE MANAGEMENT ---
-    let openInBackground = GM_getValue('vgen_bg_tabs_enabled', true);
-    let autoRevealEnabled = GM_getValue('vgen_auto_reveal_enabled', true);
+    let openInBackground = GM_getValue('vgen_bg_tabs_enabled', false);
+    let autoRevealEnabled = GM_getValue('vgen_auto_reveal_enabled', false);
     let bgMenuId, revealMenuId;
 
     function renderMenus() {
