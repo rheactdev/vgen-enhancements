@@ -290,20 +290,14 @@
         const card = e.target.closest('[class*="ProductListing"], [class*="ServiceGridCard__GridCard"]');
         if (!card) return;
 
-        // FIXED EXCLUSION FILTER: 
-        // 1. Ignore buttons and SVGs (like bookmark/heart/share buttons)
-        const interactiveBtn = e.target.closest('button, [role="button"], svg');
-        if (interactiveBtn && card.contains(interactiveBtn)) {
+        // EXCLUSION FILTER: Ignore secondary elements (bookmarks, carousel arrows, author links)
+        const interactiveChild = e.target.closest('button, [role="button"], a, svg');
+        
+        // CRITICAL FIX: Ensure the interactive element isn't the card itself!
+        // Product cards use role="button". If we don't check for (interactiveChild !== card), 
+        // the script accidentally excludes clicks on the main product card.
+        if (interactiveChild && card.contains(interactiveChild) && interactiveChild !== card) {
             return;
-        }
-
-        // 2. Ignore <a> tags only if they are secondary links (like clicking the author's profile)
-        const clickedLink = e.target.closest('a');
-        if (clickedLink && card.contains(clickedLink)) {
-            // If the link doesn't go to a service or product page, let the browser handle it normally
-            if (!clickedLink.href.includes('/service/') && !clickedLink.href.includes('/product/')) {
-                return;
-            }
         }
 
         if (!card.vgenData) card.vgenData = getVGenData(card);
@@ -313,9 +307,12 @@
             e.preventDefault();
             e.stopPropagation();
 
-            const url = `https://vgen.co/${vData.username}/${vData.type}/${vData.slug}/${vData.id}`;
+            // Construct the exact URL format: https://vgen.co/{username}/{type}/{slug}/{id}
+            const itemType = vData.type === 'service' ? 'service' : 'product';
+            const url = `https://vgen.co/${vData.username}/${itemType}/${vData.slug}/${vData.id}`;
             GM_openInTab(url, { active: false, insert: true });
         }
     }, true); // Capturing phase execution maintained for primary card clicks
+
 
 })();
