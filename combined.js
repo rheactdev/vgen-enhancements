@@ -283,29 +283,39 @@
     });
 
     // --- 5. CLICK HANDLER (Background Tab) ---
-    document.addEventListener('click', function (e) {
-        if (!openInBackground) return;
-        if (!e.target || !e.target.closest) return;
+    document.addEventListener('click', function (e) {
+        if (!openInBackground) return;
+        if (!e.target || !e.target.closest) return;
 
-        const card = e.target.closest('[class*="ProductListing"], [class*="ServiceGridCard__GridCard"]');
-        if (!card) return;
+        const card = e.target.closest('[class*="ProductListing"], [class*="ServiceGridCard__GridCard"]');
+        if (!card) return;
 
-        // EXCLUSION FILTER: Ensure standard React synthetic events handle localized card interactions
-        const interactiveChild = e.target.closest('button, [role="button"], a:not([class*="GridCard"]):not([class*="ProductListing"]), svg');
-        if (interactiveChild && card.contains(interactiveChild)) {
-            return;
-        }
+        // FIXED EXCLUSION FILTER: 
+        // 1. Ignore buttons and SVGs (like bookmark/heart/share buttons)
+        const interactiveBtn = e.target.closest('button, [role="button"], svg');
+        if (interactiveBtn && card.contains(interactiveBtn)) {
+            return;
+        }
 
-        if (!card.vgenData) card.vgenData = getVGenData(card);
-        const vData = card.vgenData;
+        // 2. Ignore <a> tags only if they are secondary links (like clicking the author's profile)
+        const clickedLink = e.target.closest('a');
+        if (clickedLink && card.contains(clickedLink)) {
+            // If the link doesn't go to a service or product page, let the browser handle it normally
+            if (!clickedLink.href.includes('/service/') && !clickedLink.href.includes('/product/')) {
+                return;
+            }
+        }
 
-        if (vData && vData.username && vData.itemName && vData.id) {
-            e.preventDefault();
-            e.stopPropagation();
+        if (!card.vgenData) card.vgenData = getVGenData(card);
+        const vData = card.vgenData;
 
-            const url = `https://vgen.co/${vData.username}/${vData.type}/${vData.slug}/${vData.id}`;
-            GM_openInTab(url, { active: false, insert: true });
-        }
-    }, true); // Capturing phase execution maintained for primary card clicks
+        if (vData && vData.username && vData.itemName && vData.id) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const url = `https://vgen.co/${vData.username}/${vData.type}/${vData.slug}/${vData.id}`;
+            GM_openInTab(url, { active: false, insert: true });
+        }
+    }, true); // Capturing phase execution maintained for primary card clicks
 
 })();
