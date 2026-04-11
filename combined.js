@@ -72,6 +72,110 @@
         .vgen-custom-badge:hover {
             transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
+
+        /* --- NOTIFICATION GRID MODE --- */
+        .vgen-grid-mode {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
+            max-height: 100vh !important; z-index: 9999 !important;
+            border-radius: 0 !important; overflow: hidden !important;
+            display: flex !important; flex-direction: column !important;
+        }
+        .vgen-grid-mode .contentSections {
+            display: flex !important; flex-direction: column !important;
+            height: 100% !important; overflow: hidden !important;
+        }
+        .vgen-grid-mode .upper {
+            flex-shrink: 0 !important;
+        }
+        .vgen-grid-mode .listContent {
+            flex: 1 !important; overflow-y: auto !important;
+            padding: 16px !important;
+        }
+        .vgen-grid-mode .listContent > ul {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+            gap: 16px !important; list-style: none !important;
+            padding: 0 !important; margin: 0 !important;
+        }
+        .vgen-grid-mode .notification {
+            border-radius: 10px !important; overflow: hidden !important;
+            transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+        }
+        .vgen-grid-mode .notification:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 6px 16px rgba(184, 255, 38, 0.15) !important;
+        }
+        /* Full chain: notification → Container → a → notificationContent must all flex column */
+        .vgen-grid-mode [class*="Notification__Container"] {
+            display: flex !important; flex-direction: column !important;
+            height: 100% !important;
+        }
+        .vgen-grid-mode a.noLinkStyling {
+            display: flex !important; flex-direction: column !important;
+            flex: 1 !important;
+        }
+        .vgen-grid-mode .notificationContent {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+            align-items: center;
+        }
+        /* Image section: constrain height so text stays visible */
+        .vgen-grid-mode .imageSectionContainer {
+            width: 100% !important;
+            max-height: 220px !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+        .vgen-grid-mode [class*="MediaGroupContainer"] {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        /* Product thumbnails (MediaElementBadge): fill the constrained image area */
+        .vgen-grid-mode [class*="MediaElementBadge"] {
+            width: 100% !important; height: 220px !important;
+            object-fit: cover !important; border-radius: 0 !important;
+            display: block !important;
+        }
+        /* Text section: below the image */
+        .vgen-grid-mode .textSectionContainer {
+            width: 100% !important;
+            padding: 12px !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+        }
+        .vgen-grid-mode .textSectionContents {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        /* Commission cover images: full-width below text */
+        .vgen-grid-mode [class*="NotificationCoverImageContainer"] {
+            width: 100% !important; max-width: 100% !important;
+            flex-shrink: 0 !important; overflow: hidden !important;
+            margin-top: 8px !important;
+        }
+        .vgen-grid-mode [class*="NotificationCoverImageContainer"] .innerMedia {
+            width: 100% !important; max-height: 220px !important;
+            object-fit: cover !important; display: block !important;
+        }
+        .vgen-grid-mode [class*="NotificationCoverImageContainer"] .blurContainer {
+            width: 100% !important; max-height: 220px !important;
+            overflow: hidden !important;
+        }
+        .vgen-grid-mode ~ [class*="ExpandedNavOverlay"] {
+            display: none !important;
+        }
+        .vgen-grid-active-btn {
+            background: #B8FF26 !important; color: #000 !important;
+        }
+        .vgen-grid-mode [class*="Notification__CircleBadge"] {
+            display: none !important;
+        }
+        .vgen-grid-mode .imageBadge {
+            display: none !important;
+        }
     `;
     document.head.appendChild(style);
 
@@ -116,6 +220,54 @@
         }
         return null;
     }
+
+    // --- 2B. NOTIFICATION GRID VIEW ---
+    function toggleNotificationGridView() {
+        const menu = document.querySelector('.menuContainer');
+        if (!menu) return;
+
+        const isGrid = menu.classList.toggle('vgen-grid-mode');
+        const btn = document.getElementById('vgen-grid-toggle-btn');
+        if (btn) {
+            btn.querySelector('.text').textContent = isGrid ? 'List View' : 'Grid View';
+            btn.classList.toggle('vgen-grid-active-btn', isGrid);
+        }
+    }
+
+    function injectGridViewButton() {
+        const upperBar = document.querySelector('.menuContainer .upper');
+        if (!upperBar) return;
+        if (document.getElementById('vgen-grid-toggle-btn')) return;
+
+        const gridBtn = document.createElement('button');
+        gridBtn.id = 'vgen-grid-toggle-btn';
+        gridBtn.type = 'button';
+        gridBtn.className = 'Button__ButtonElement-sc-f26cb67a-0 khYhRB';
+        gridBtn.innerHTML = `<span class="centerContent"><span class="text">Grid View</span></span>`;
+        gridBtn.style.marginLeft = '8px';
+        gridBtn.addEventListener('click', toggleNotificationGridView);
+
+        const btnContainer = upperBar.querySelector('[class*="NotificationNavMenu__Container"]');
+        if (btnContainer) {
+            btnContainer.appendChild(gridBtn);
+        } else {
+            upperBar.appendChild(gridBtn);
+        }
+    }
+
+    // Use MutationObserver to detect when the notification menu appears
+    const notifObserver = new MutationObserver(function (mutations) {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== 1) continue;
+                if (node.classList?.contains('menuContainer') || node.querySelector?.('.menuContainer')) {
+                    setTimeout(injectGridViewButton, 50);
+                    return;
+                }
+            }
+        }
+    });
+    notifObserver.observe(document.body, { childList: true, subtree: true });
 
     // --- 3. DOM CACHING & REVEAL LOGIC ---
     function getCardDOM(card) {
