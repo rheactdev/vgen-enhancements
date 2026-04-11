@@ -239,55 +239,12 @@
     }
 
     // --- 2B. NOTIFICATION GRID VIEW ---
-    let gridRevealObserver = null;
-
-    function revealSensitiveInNotifications(container) {
-        if (!autoRevealEnabled) return;
-        container.querySelectorAll('.blurContainer, [class*="BlurContainer"], [class*="Blur__"]').forEach(el => {
-            el.style.filter = 'none';
-            el.style.webkitFilter = 'none';
-        });
-        container.querySelectorAll('[class*="MatureContent"], [class*="SensitiveContent"], [class*="ContentWarning"]').forEach(el => {
-            el.style.display = 'none';
-        });
-    }
-
-    function startGridAutoRevealObserver(menu) {
-        stopGridAutoRevealObserver();
-        const list = menu.querySelector('.listContent ul');
-        if (!list) return;
-        gridRevealObserver = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                for (const node of mutation.addedNodes) {
-                    if (node.nodeType !== 1) continue;
-                    revealSensitiveInNotifications(node);
-                }
-            }
-        });
-        gridRevealObserver.observe(list, { childList: true });
-    }
-
-    function stopGridAutoRevealObserver() {
-        if (gridRevealObserver) {
-            gridRevealObserver.disconnect();
-            gridRevealObserver = null;
-        }
-    }
-
     function toggleNotificationGridView() {
         const menu = document.querySelector('.menuContainer');
         if (!menu) return;
 
         const isGrid = menu.classList.toggle('vgen-grid-mode');
-
-        if (isGrid && autoRevealEnabled) {
-            menu.classList.add('vgen-auto-reveal');
-            revealSensitiveInNotifications(menu);
-            startGridAutoRevealObserver(menu);
-        } else {
-            menu.classList.remove('vgen-auto-reveal');
-            stopGridAutoRevealObserver();
-        }
+        menu.classList.toggle('vgen-auto-reveal', isGrid && autoRevealEnabled);
 
         const btn = document.getElementById('vgen-grid-toggle-btn');
         if (btn) {
