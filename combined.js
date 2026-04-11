@@ -19,11 +19,13 @@
     // --- 0. CONFIGURATION & STATE MANAGEMENT ---
     let openInBackground = GM_getValue('vgen_bg_tabs_enabled', false);
     let autoRevealEnabled = GM_getValue('vgen_auto_reveal_enabled', false);
-    let bgMenuId, revealMenuId;
+    let gridNotificationDisplay = GM_getValue('vgen_grid_notification_display', false);
+    let bgMenuId, revealMenuId, gridMenuId;
 
     function renderMenus() {
         if (typeof bgMenuId !== 'undefined') GM_unregisterMenuCommand(bgMenuId);
         if (typeof revealMenuId !== 'undefined') GM_unregisterMenuCommand(revealMenuId);
+        if (typeof gridMenuId !== 'undefined') GM_unregisterMenuCommand(gridMenuId);
 
         bgMenuId = GM_registerMenuCommand(`Background Tabs: ${openInBackground ? 'ON' : 'OFF'}`, () => {
             openInBackground = !openInBackground;
@@ -36,6 +38,13 @@
             GM_setValue('vgen_auto_reveal_enabled', autoRevealEnabled);
             renderMenus(); // Re-render to update UI text
         });
+
+        gridMenuId = GM_registerMenuCommand(`Grid Notification Display: ${gridNotificationDisplay ? 'ON' : 'OFF'}`, () => {
+            gridNotificationDisplay = !gridNotificationDisplay;
+            GM_setValue('vgen_grid_notification_display', gridNotificationDisplay);
+            renderMenus(); // Re-render to update UI text
+        });
+
     }
     renderMenus();
 
@@ -178,7 +187,7 @@
         }
         
         [class*="NotificationNavMenu__Container"] {
-            display: flex !important;
+            display: flex !important; align-items: center !important; gap: 8px !important;
         }
 
         #vgen-grid-toggle-btn {
@@ -222,6 +231,12 @@
     }
 
     document.head.appendChild(style);
+
+    if (!gridNotificationDisplay) {
+        const gridNotifStyle = document.createElement('style');
+        gridNotifStyle.innerHTML = `#vgen-grid-toggle-btn { display: none !important; }`;
+        document.head.appendChild(gridNotifStyle);
+    }
 
     // --- 2. HELPERS & HIGH-SPEED SCRAPER ---
     function createSlug(str) {
