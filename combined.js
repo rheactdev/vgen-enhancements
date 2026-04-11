@@ -176,6 +176,23 @@
         .vgen-grid-mode .imageBadge {
             display: none !important;
         }
+
+        /* Hide notifications with no image preview in grid mode */
+        .vgen-grid-mode .notification:not(:has([class*="MediaElementBadge"], [class*="NotificationCoverImageContainer"])) {
+            display: none !important;
+        }
+
+        /* Auto-reveal sensitive content in notification grid */
+        .vgen-grid-mode.vgen-auto-reveal .blurContainer,
+        .vgen-grid-mode.vgen-auto-reveal [class*="Blur__"] {
+            filter: none !important;
+            -webkit-filter: none !important;
+        }
+        .vgen-grid-mode.vgen-auto-reveal [class*="MatureContent"],
+        .vgen-grid-mode.vgen-auto-reveal [class*="SensitiveContent"],
+        .vgen-grid-mode.vgen-auto-reveal [class*="ContentWarning"] {
+            display: none !important;
+        }
     `;
     document.head.appendChild(style);
 
@@ -222,11 +239,56 @@
     }
 
     // --- 2B. NOTIFICATION GRID VIEW ---
+    let gridRevealObserver = null;
+
+    function revealSensitiveInNotifications(container) {
+        if (!autoRevealEnabled) return;
+        container.querySelectorAll('.blurContainer, [class*="BlurContainer"], [class*="Blur__"]').forEach(el => {
+            el.style.filter = 'none';
+            el.style.webkitFilter = 'none';
+        });
+        container.querySelectorAll('[class*="MatureContent"], [class*="SensitiveContent"], [class*="ContentWarning"]').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+
+    function startGridAutoRevealObserver(menu) {
+        stopGridAutoRevealObserver();
+        const list = menu.querySelector('.listContent ul');
+        if (!list) return;
+        gridRevealObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType !== 1) continue;
+                    revealSensitiveInNotifications(node);
+                }
+            }
+        });
+        gridRevealObserver.observe(list, { childList: true });
+    }
+
+    function stopGridAutoRevealObserver() {
+        if (gridRevealObserver) {
+            gridRevealObserver.disconnect();
+            gridRevealObserver = null;
+        }
+    }
+
     function toggleNotificationGridView() {
         const menu = document.querySelector('.menuContainer');
         if (!menu) return;
 
         const isGrid = menu.classList.toggle('vgen-grid-mode');
+
+        if (isGrid && autoRevealEnabled) {
+            menu.classList.add('vgen-auto-reveal');
+            revealSensitiveInNotifications(menu);
+            startGridAutoRevealObserver(menu);
+        } else {
+            menu.classList.remove('vgen-auto-reveal');
+            stopGridAutoRevealObserver();
+        }
+
         const btn = document.getElementById('vgen-grid-toggle-btn');
         if (btn) {
             btn.querySelector('.text').textContent = isGrid ? 'List View' : 'Grid View';
@@ -435,36 +497,36 @@
     });
 
     // --- 5. CLICK HANDLER (Background Tab) ---
-    document.addEventListener('click', function (e) {
-        if (!openInBackground) return;
-        if (!e.target || !e.target.closest) return;
+    document.addEventListener('click', function (e) {
+        if (!openInBackground) return;
+        if (!e.target || !e.target.closest) return;
 
-        const card = e.target.closest('[class*="ProductListing"], [class*="ServiceGridCard__GridCard"]');
-        if (!card) return;
+        const card = e.target.closest('[class*="ProductListing"], [class*="ServiceGridCard__GridCard"]');
+        if (!card) return;
 
-        // EXCLUSION FILTER: Ignore secondary elements (bookmarks, carousel arrows, author links)
-        const interactiveChild = e.target.closest('button, [role="button"], a, svg');
-        
-        // CRITICAL FIX: Ensure the interactive element isn't the card itself!
-        // Product cards use role="button". If we don't check for (interactiveChild !== card), 
-        // the script accidentally excludes clicks on the main product card.
-        if (interactiveChild && card.contains(interactiveChild) && interactiveChild !== card) {
-            return;
-        }
+        // EXCLUSION FILTER: Ignore secondary elements (bookmarks, carousel arrows, author links)
+        const interactiveChild = e.target.closest('button, [role="button"], a, svg');
 
-        if (!card.vgenData) card.vgenData = getVGenData(card);
-        const vData = card.vgenData;
+        // CRITICAL FIX: Ensure the interactive element isn't the card itself!
+        // Product cards use role="button". If we don't check for (interactiveChild !== card), 
+        // the script accidentally excludes clicks on the main product card.
+        if (interactiveChild && card.contains(interactiveChild) && interactiveChild !== card) {
+            return;
+        }
 
-        if (vData && vData.username && vData.itemName && vData.id) {
-            e.preventDefault();
-            e.stopPropagation();
+        if (!card.vgenData) card.vgenData = getVGenData(card);
+        const vData = card.vgenData;
 
-            // Construct the exact URL format: https://vgen.co/{username}/{type}/{slug}/{id}
-            const itemType = vData.type === 'service' ? 'service' : 'product';
-            const url = `https://vgen.co/${vData.username}/${itemType}/${vData.slug}/${vData.id}`;
-            GM_openInTab(url, { active: false, insert: true });
-        }
-    }, true); // Capturing phase execution maintained for primary card clicks
+        if (vData && vData.username && vData.itemName && vData.id) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Construct the exact URL format: https://vgen.co/{username}/{type}/{slug}/{id}
+            const itemType = vData.type === 'service' ? 'service' : 'product';
+            const url = `https://vgen.co/${vData.username}/${itemType}/${vData.slug}/${vData.id}`;
+            GM_openInTab(url, { active: false, insert: true });
+        }
+    }, true); // Capturing phase execution maintained for primary card clicks
 
 
 })();
