@@ -177,6 +177,10 @@
             display: none !important;
         }
 
+        .vgen-grid-mode [class*="NotificationNavMenu__Container"] {
+            display: flex !important; align-items: center !important; gap: 8px !important;
+        }
+
         /* Hide notifications with no image preview in grid mode */
         .vgen-grid-mode .notification:not(:has([class*="MediaElementBadge"], [class*="NotificationCoverImageContainer"])) {
             display: none !important;
