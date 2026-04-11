@@ -176,6 +176,14 @@
         .vgen-grid-mode .imageBadge {
             display: none !important;
         }
+        
+        [class*="NotificationNavMenu__Container"] {
+            display: flex !important;
+        }
+
+        #vgen-grid-toggle-btn {
+            height: 25px;
+        }            
 
         .vgen-grid-mode [class*="NotificationNavMenu__Container"] {
             display: flex !important; align-items: center !important; gap: 8px !important;
@@ -267,8 +275,7 @@
 
         const btn = document.getElementById('vgen-grid-toggle-btn');
         if (btn) {
-            btn.querySelector('.text').textContent = isGrid ? 'List View' : 'Grid View';
-            btn.classList.toggle('vgen-grid-active-btn', isGrid);
+            btn.querySelector('.text').textContent = isGrid ? '✕' : '⧉';
         }
     }
 
@@ -280,8 +287,8 @@
         const gridBtn = document.createElement('button');
         gridBtn.id = 'vgen-grid-toggle-btn';
         gridBtn.type = 'button';
-        gridBtn.className = 'Button__ButtonElement-sc-f26cb67a-0 khYhRB';
-        gridBtn.innerHTML = `<span class="centerContent"><span class="text">Grid View</span></span>`;
+        gridBtn.className = 'Button__ButtonElement';
+        gridBtn.innerHTML = `<span class="centerContent"><span class="text">⧉</span></span>`;
         gridBtn.style.marginLeft = '8px';
         gridBtn.addEventListener('click', toggleNotificationGridView);
 
