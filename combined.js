@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         VGen: Ultimate Enhancement Suite
 // @namespace    https://github.com/rheactdev/vgen-enhancements
-// @version      0.3.0
-// @description  Combines Auto-Reveal, Price Hover, and Background Tab clicks into one ultra-optimized script.
+// @version      0.4.0
+// @description  Auto-Reveal, Price Hover, Background Tabs, and Notification Grid View for VGen.
 // @author       https://github.com/rheactdev
 // @match        *://vgen.co/*
 // @grant        GM_openInTab
