@@ -182,16 +182,22 @@
             display: none !important;
         }
 
-        /* Auto-reveal sensitive content in notification grid */
-        .vgen-grid-mode.vgen-auto-reveal .blurContainer,
-        .vgen-grid-mode.vgen-auto-reveal [class*="Blur__"] {
+        /* Auto-reveal: CSS baseline (covers cases without inline styles) */
+        .blurContainer,
+        .blurContainer > * {
             filter: none !important;
             -webkit-filter: none !important;
         }
-        .vgen-grid-mode.vgen-auto-reveal [class*="MatureContent"],
-        .vgen-grid-mode.vgen-auto-reveal [class*="SensitiveContent"],
-        .vgen-grid-mode.vgen-auto-reveal [class*="ContentWarning"] {
+        .vgen-auto-reveal [class*="MatureContent"],
+        .vgen-auto-reveal [class*="SensitiveContent"],
+        .vgen-auto-reveal [class*="ContentWarning"] {
             display: none !important;
+        }
+        /* JS-revealed: belt-and-suspenders for inline styles */
+        .vgen-revealed,
+        .vgen-revealed > * {
+            filter: none !important;
+            -webkit-filter: none !important;
         }
     `;
     document.head.appendChild(style);
