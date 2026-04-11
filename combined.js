@@ -182,12 +182,18 @@
             display: none !important;
         }
 
-        /* Auto-reveal: CSS baseline (covers cases without inline styles) */
+
+    `;
+
+    if (autoRevealEnabled) {
+        const notifAutoRevealStyle = document.createElement('style');
+        notifAutoRevealStyle.innerHTML = `
         .blurContainer,
         .blurContainer > * {
             filter: none !important;
             -webkit-filter: none !important;
         }
+        /* Auto-reveal: CSS baseline (covers cases without inline styles) */
         .vgen-auto-reveal [class*="MatureContent"],
         .vgen-auto-reveal [class*="SensitiveContent"],
         .vgen-auto-reveal [class*="ContentWarning"] {
@@ -199,7 +205,10 @@
             filter: none !important;
             -webkit-filter: none !important;
         }
-    `;
+        `;
+        document.head.appendChild(notifAutoRevealStyle);
+    }
+
     document.head.appendChild(style);
 
     // --- 2. HELPERS & HIGH-SPEED SCRAPER ---
