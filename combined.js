@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VGen: Ultimate Enhancement Suite
 // @namespace    https://github.com/rheactdev/vgen-enhancements
-// @version      0.4.0
+// @version      0.4.1
 // @description  Auto-Reveal, Price Hover, Background Tabs, and Notification Grid View for VGen.
 // @author       https://github.com/rheactdev
 // @match        *://vgen.co/*
@@ -17,9 +17,9 @@
     'use strict';
 
     // --- 0. CONFIGURATION & STATE MANAGEMENT ---
-    let openInBackground = GM_getValue('vgen_bg_tabs_enabled', false);
-    let autoRevealEnabled = GM_getValue('vgen_auto_reveal_enabled', false);
-    let gridNotificationDisplay = GM_getValue('vgen_grid_notification_display', false);
+    let openInBackground = GM_getValue('vgen_bg_tabs_enabled', true);
+    let autoRevealEnabled = GM_getValue('vgen_auto_reveal_enabled', true);
+    let gridNotificationDisplay = GM_getValue('vgen_grid_notification_display', true);
     let bgMenuId, revealMenuId, gridMenuId;
 
     function renderMenus() {
@@ -376,6 +376,33 @@
         return `<span class="vgen-custom-badge" style="background: ${colorHex}22; color: ${colorHex}; border: 1px solid ${colorHex}55;">${text}</span>`;
     }
 
+    function getCurrencyScale(currency) {
+        const safeCurrency = currency || 'USD';
+
+        try {
+            const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: safeCurrency });
+            const fractionDigits = formatter.resolvedOptions().maximumFractionDigits;
+            return 10 ** fractionDigits;
+        } catch (e) {
+            return 100;
+        }
+    }
+
+    function createCurrencyFormatter(currency) {
+        const safeCurrency = currency || 'USD';
+
+        try {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: safeCurrency });
+        } catch (e) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+        }
+    }
+
+    function formatMinorCurrencyAmount(amount, currency) {
+        const formatter = createCurrencyFormatter(currency);
+        return formatter.format(amount / getCurrencyScale(currency));
+    }
+
     function executePriceReveal(card, vData, dom) {
         if (card.dataset.priceRevealed === "true" || !dom.thumb) return;
         card.dataset.priceRevealed = "true";
@@ -409,8 +436,7 @@
         let discountHtml = '';
 
         if (vData.price) {
-            const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: vData.currency });
-            priceText = `From ${formatter.format(vData.price / 100)}`;
+            priceText = `From ${formatMinorCurrencyAmount(vData.price, vData.currency)}`;
 
             if (vData.discounts && vData.discounts.length > 0) {
                 const now = new Date();
@@ -426,7 +452,7 @@
                         const pct = activeDiscount.percentage < 1 ? activeDiscount.percentage * 100 : activeDiscount.percentage;
                         discountVal = `${pct}% OFF`;
                     } else if (activeDiscount.amount) {
-                        discountVal = `-${formatter.format(activeDiscount.amount / 100)}`;
+                        discountVal = `-${formatMinorCurrencyAmount(activeDiscount.amount, vData.currency)}`;
                     }
                     discountHtml = `<span class="vgen-custom-badge" style="background:#ef4444;color:white;border:none;">${discountVal}</span>`;
                 }

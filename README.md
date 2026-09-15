@@ -28,7 +28,7 @@ Modern web apps like VGen use "Single Page Application" (SPA) routing which ofte
 VGen omits pricing data from the initial search results to save bandwidth. This script restores that data without requiring a click.
 
 * **Hover Intent**: Triggers a fetch only when you hover over a card for **300ms**, mimicking human behavior to avoid anti-bot flags.
-* **Stripe Math Correction**: Automatically converts raw API integers (cents) into readable currency (e.g., `20000` → `$200.00`).
+* **Currency Math Correction**: Automatically converts raw API integers into readable currency using each currency's minor-unit scale (e.g., `20000` USD → `$200.00`, `160000` JPY → `¥160,000`).
 * **License Badges**: Displays commercial use, merchandising, and custom license info as color-coded badges.
 * **Discount Tags**: Shows active sale percentages directly on the card.
 * **Persistent UI**: Revealed prices stay on the card permanently until the page is refreshed.
@@ -57,9 +57,9 @@ All features are toggled via the Violentmonkey/Tampermonkey/Greasemonkey extensi
 
 | Toggle | Default | Description |
 |---|---|---|
-| Background Tabs | OFF | Open cards in background tabs on click |
-| Auto-Reveal Sensitive | OFF | Remove blur filters and content warnings site-wide |
-| Grid Notification Display | OFF | Show the Grid View button in the notifications panel |
+| Background Tabs | ON | Open cards in background tabs on click |
+| Auto-Reveal Sensitive | ON | Remove blur filters and content warnings site-wide |
+| Grid Notification Display | ON | Show the Grid View button in the notifications panel |
 
 ## 🛠️ To Do
 - [x] ~~Make VGen: Open Products in Background Tab work on products not on the shop page~~ Done!
@@ -67,3 +67,4 @@ All features are toggled via the Violentmonkey/Tampermonkey/Greasemonkey extensi
 - [x] ~~Notification Grid View with full-page layout~~ Done!
 - [x] ~~Pure CSS blur removal for notifications~~ Done!
 - [x] ~~Hide broken/imageless notifications in grid mode~~ Done!
+- [ ] Implement Stripe-exact currency minor-unit handling, including zero-decimal currencies and Stripe-specific special cases such as ISK and UGX.
