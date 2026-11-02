@@ -71,6 +71,11 @@
             object-fit: cover; z-index: 5; border-radius: inherit; pointer-events: none;
             opacity: 0; transition: opacity 0.2s ease-in-out; will-change: opacity;
         }
+        /* Keep native controls above the revealed media and price overlay. */
+        [data-image-revealed="true"] [class*="ThumbnailContainer"] > .bookmarkServiceBadgeContainer,
+        [data-image-revealed="true"] [class*="ThumbnailContainer"] > [class*="ServiceGridCard__ServiceStatusBadgeContainer"] {
+            z-index: 11 !important;
+        }
         .vgen-custom-badge {
             font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;
             text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
@@ -529,7 +534,7 @@
         if (!card) return;
 
         // EXCLUSION FILTER: Ignore secondary elements (bookmarks, carousel arrows, author links)
-        const interactiveChild = e.target.closest('button, [role="button"], a, svg');
+        const interactiveChild = e.target.closest('button, [role="button"], .bookmarkServiceBadgeContainer, [class*="BookmarkServiceBadge"], a, svg');
 
         // CRITICAL FIX: Ensure the interactive element isn't the card itself!
         // Product cards use role="button". If we don't check for (interactiveChild !== card), 
